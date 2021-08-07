@@ -1,26 +1,31 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import ReactDOM from 'react-dom'
+import {CovidCard} from './components/CovidCard'
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+interface State {
+  hcert: string
+}
+class App extends React.Component<object, State> {
+  
+  constructor(props: object) {
+    super(props)
+    this.state = {hcert: ''}
+  }
+
+  render() {
+    return <>
+    <div className="noprint">
+      <h3>This is a tool for printing your EU Digital COVID Certificate.</h3>
+      <p>Scan your qr code with a qr code decoder app then copy the text starting with 'HC1:' and insert it below.</p>
+      <input type="text" value={this.state.hcert} onChange={(e) => this.setState({hcert: e.target.value})} placeholder="HC1:" />
+      <button onClick={() => {
+        ReactDOM.render(<CovidCard hcert={this.state.hcert}/>, document.getElementById('card'))
+        window.print()
+      }}>Print the card</button>
     </div>
-  );
+    <div id="card"></div>
+    </>
+  }
 }
 
 export default App;
