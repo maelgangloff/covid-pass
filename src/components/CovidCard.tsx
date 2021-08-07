@@ -1,4 +1,4 @@
-    import React from 'react'
+import React from 'react'
 import '../style/card.scss'
 import base45 from 'base45'
 import zlib from 'zlib'
@@ -7,7 +7,7 @@ import { EUDCC } from '../types/dgc-combined-schema'
 import QRCode from 'qrcode.react'
 import crypto from 'crypto'
 
-type DecodedQRCode = {
+    type DecodedQRCode = {
     header: {
         alg: number,
         kid: string
@@ -37,7 +37,7 @@ function decodeQRCode(hcert: string): DecodedQRCode | null {
     const rawPayload = cbor.decodeFirstSync(value[2])
     const rawHeader = cbor.decodeFirstSync(value[0])
 
-    const header = {alg: rawHeader.get(1), kid: rawHeader.get(4).toString('hex')}
+    const header = {alg: rawHeader.get(1), kid: rawHeader.get(4).toString('base64')}
     const payload = {
         issuer: rawPayload.get(1),
         issuedAt: new Date(rawPayload.get(6)*1000).toISOString(),
@@ -48,7 +48,7 @@ function decodeQRCode(hcert: string): DecodedQRCode | null {
     return {
         header,
         payload,
-        sig: value[3].toString('hex')
+        sig: value[3].toString('base64')
     }
     } catch(e) {
         return null
