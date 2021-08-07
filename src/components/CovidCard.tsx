@@ -1,4 +1,4 @@
-import React from 'react'
+    import React from 'react'
 import '../style/card.scss'
 import base45 from 'base45'
 import zlib from 'zlib'
@@ -33,7 +33,7 @@ function decodeQRCode(hcert: string): DecodedQRCode | null {
     if(!hcert.startsWith('HC1:')) throw new Error('QR data must starts with HC1.')
     try {
         const {value} = cbor.decodeFirstSync(zlib.inflateSync(base45.decode(hcert.substr(4, hcert.length))))
-    
+
     const rawPayload = cbor.decodeFirstSync(value[2])
     const rawHeader = cbor.decodeFirstSync(value[0])
 
@@ -44,7 +44,7 @@ function decodeQRCode(hcert: string): DecodedQRCode | null {
         expiresAt: new Date(rawPayload.get(4)*1000).toISOString(),
         certificate: rawPayload.get(-260).get(1)
     }
-    
+
     return {
         header,
         payload,
@@ -56,7 +56,7 @@ function decodeQRCode(hcert: string): DecodedQRCode | null {
 }
 
 export class CovidCard extends React.Component<Props, State> {
-    
+
     constructor(props: Props) {
         super(props)
         this.state = {hcert: decodeQRCode(props.hcert)}
