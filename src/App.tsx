@@ -1,5 +1,4 @@
 import React from 'react';
-import ReactDOM from 'react-dom'
 import {CovidCard} from './components/CovidCard'
 
 interface State {
