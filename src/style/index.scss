@@ -6,6 +6,9 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  @media screen {
+    background-color: #f8f9fa;
+  }
 }
 
 .noprint {
