@@ -57,7 +57,7 @@ class App extends React.Component<object, State> {
           <input className='form-control' type="text" value={this.state.hcert}
                  onChange={({target}) => this.setState({hcert: target.value})} placeholder="HC1:"/>
           <div className="input-group-append">
-            <Button variant="success" onClick={this.onAppend}>❎</Button>
+            <Button variant="success" onClick={this.onAppend}>✅</Button>
             <Button variant='secondary' onClick={window.print}>🖨️</Button>
             <Button variant='danger' onClick={() => this.setState({cards: [], hcert: ''})}>🗑</Button>
           </div>
