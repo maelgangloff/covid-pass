@@ -12,9 +12,10 @@ table {
 
     td {
         border: 1px solid;
-        width: 8.5cm;
-        height: 5.5cm;
-
+        @media print {
+            width: 8.5cm;
+            height: 5.5cm;
+        }
         h4 {
             font-family: Arial, sans-serif;
             margin-top: 0;
@@ -29,8 +30,10 @@ table {
         svg {
             margin: auto;
             display: block;
-            height: 4cm;
-            width: 4cm;
+            @media print {
+                height: 4cm;
+                width: 4cm;
+            }
         }
         p {
             font-size: small;

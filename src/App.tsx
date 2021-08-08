@@ -52,16 +52,17 @@ class App extends React.Component<object, State> {
       </Modal>
       <Jumbotron fluid={true} className='noprint'>
         <h3>A tool for printing your EU Digital COVID Certificate.</h3>
-        <div className="input-group input-group-sm">
-          <button className='btn btn-outline-dark btn-sm' onClick={() => this.setState({isScanning: true})}>📷 Scan</button>
+        <div className="input-group input-group">
+          <button className='btn btn-outline-dark' onClick={() => this.setState({isScanning: true})}>📷 Scan</button>
           <input className='form-control' type="text" value={this.state.hcert}
                  onChange={({target}) => this.setState({hcert: target.value})} placeholder="HC1:"/>
           <div className="input-group-append">
-            <Button variant="success" size='sm' onClick={this.onAppend}>➕ Append</Button>
-            <Button variant='secondary' size='sm' onClick={window.print}>🖨️ Print</Button>
-            <Button variant='danger' size='sm' onClick={() => this.setState({cards: [], hcert: ''})}>Clear</Button>
+            <Button variant="success" onClick={this.onAppend}>➕ Append</Button>
+            <Button variant='secondary' onClick={window.print}>🖨️ Print</Button>
+            <Button variant='danger' onClick={() => this.setState({cards: [], hcert: ''})}>Clear</Button>
           </div>
         </div>
+        <br/>
       </Jumbotron>
       <div id="cards">{this.state.cards}</div>
     </>

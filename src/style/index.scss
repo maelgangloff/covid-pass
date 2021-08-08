@@ -11,6 +11,7 @@ body {
 .noprint {
   @media print {
     visibility: hidden;
+    height: 0;
   }
   margin-top: 10px;
   margin-left: 10px;
