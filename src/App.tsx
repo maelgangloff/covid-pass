@@ -51,15 +51,15 @@ class App extends React.Component<object, State> {
         </Modal.Footer>
       </Modal>
       <Jumbotron fluid={true} className='noprint'>
-        <h3>A tool for printing your EU Digital COVID Certificate.</h3>
+        <h3>Print EU Digital COVID Certificate</h3>
         <div className="input-group input-group">
-          <button className='btn btn-outline-dark' onClick={() => this.setState({isScanning: true})}>📷 Scan</button>
+          <button className='btn btn-outline-dark' onClick={() => this.setState({isScanning: true})}>📷</button>
           <input className='form-control' type="text" value={this.state.hcert}
                  onChange={({target}) => this.setState({hcert: target.value})} placeholder="HC1:"/>
           <div className="input-group-append">
-            <Button variant="success" onClick={this.onAppend}>➕ Append</Button>
-            <Button variant='secondary' onClick={window.print}>🖨️ Print</Button>
-            <Button variant='danger' onClick={() => this.setState({cards: [], hcert: ''})}>Clear</Button>
+            <Button variant="success" onClick={this.onAppend}>❎</Button>
+            <Button variant='secondary' onClick={window.print}>🖨️</Button>
+            <Button variant='danger' onClick={() => this.setState({cards: [], hcert: ''})}>🗑</Button>
           </div>
         </div>
         <br/>
