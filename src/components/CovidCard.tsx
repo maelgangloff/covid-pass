@@ -13,10 +13,10 @@ import crypto from 'crypto'
         kid: string
     },
     payload: {
-        issuer: string,
-        issuedAt: string,
-        expiresAt: string,
-        certificate: EUDCC
+        iss: string,
+        iat: string,
+        exp: string,
+        hcert: EUDCC
     },
     sig: string
 }
@@ -30,26 +30,25 @@ interface State {
 
 
 function decodeQRCode(hcert: string): DecodedQRCode | null {
-    if(!hcert.startsWith('HC1:')) throw new Error('QR data must starts with HC1.')
+    if(!hcert.startsWith('HC1:')) throw new Error('QR content must starts with HC1.')
     try {
         const {value} = cbor.decodeFirstSync(zlib.inflateSync(base45.decode(hcert.substr(4, hcert.length))))
+        const rawPayload = cbor.decodeFirstSync(value[2])
+        const rawHeader = cbor.decodeFirstSync(value[0])
 
-    const rawPayload = cbor.decodeFirstSync(value[2])
-    const rawHeader = cbor.decodeFirstSync(value[0])
+        const header = {alg: rawHeader.get(1), kid: rawHeader.get(4).toString('base64')}
+        const payload = {
+            iss: rawPayload.get(1),
+            iat: new Date(rawPayload.get(6)*1000).toISOString(),
+            exp: new Date(rawPayload.get(4)*1000).toISOString(),
+            hcert: rawPayload.get(-260).get(1)
+        }
 
-    const header = {alg: rawHeader.get(1), kid: rawHeader.get(4).toString('base64')}
-    const payload = {
-        issuer: rawPayload.get(1),
-        issuedAt: new Date(rawPayload.get(6)*1000).toISOString(),
-        expiresAt: new Date(rawPayload.get(4)*1000).toISOString(),
-        certificate: rawPayload.get(-260).get(1)
-    }
-
-    return {
-        header,
-        payload,
-        sig: value[3].toString('base64')
-    }
+        return {
+            header,
+            payload,
+            sig: value[3].toString('base64')
+        }
     } catch(e) {
         return null
     }
@@ -64,11 +63,11 @@ export class CovidCard extends React.Component<Props, State> {
 
     render () {
         const {hcert} = this.state
-        if(hcert === null) throw new Error('Not a valid certificate.')
-        const {payload: {certificate}} = hcert
+        if(hcert === null) return <></>
+        const {payload: {hcert: certificate}} = hcert
         const passType = 'v' in certificate ? 'VACCINATION' : 't' in certificate ? 'TEST' : 'RECOVERY'
         const certData = passType === 'VACCINATION' ? certificate.v : passType === 'TEST' ? certificate.t : certificate.r
-        if(certData === undefined) throw new Error("Not a valid certificate.")
+        if(certData === undefined) return <></>
         const [cert] = certData
         return <table>
             <tbody>
@@ -118,7 +117,7 @@ export class CovidCard extends React.Component<Props, State> {
                                 <td>{cert.dn as string}</td>
                             </tr>
                             <tr>
-                                <td>The overall number of doses in the series</td>
+                                <td>The overall number of doses</td>
                                 <td>{cert.sd as string}</td>
                             </tr>
                             <tr>

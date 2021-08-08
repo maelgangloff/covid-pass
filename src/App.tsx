@@ -23,9 +23,9 @@ class App extends React.Component<object, State> {
 
   onAppend() {
     if (this.state.hcert.startsWith('HC1:')) {
-      this.setState({cards: [...this.state.cards, <CovidCard hcert={this.state.hcert}/>]})
+      this.setState({cards: [...this.state.cards, <CovidCard hcert={this.state.hcert} />]})
     } else {
-      throw new Error('QR data must starts with HC1:')
+      alert('QR content must starts with HC1:')
     }
   }
 
@@ -37,11 +37,11 @@ class App extends React.Component<object, State> {
         </Modal.Header>
         <Modal.Body>
           <QrReader
-            onScan={hcert => hcert !== null && this.setState({hcert, isScanning: false})}
+            onScan={hcert => hcert !== null && hcert.startsWith('HC1:') && this.setState({cards: [...this.state.cards, <CovidCard hcert={hcert}/>], isScanning: false})}
             onError={console.log}
             facingMode='environment'
             style={{width: '100%'}}
-            showViewFinder={false}
+            showViewFinder={true}
           />
         </Modal.Body>
         <Modal.Footer>
@@ -53,15 +53,13 @@ class App extends React.Component<object, State> {
       <Jumbotron fluid={true} className='noprint'>
         <h3>A tool for printing your EU Digital COVID Certificate.</h3>
         <div className="input-group input-group-sm">
-          <button className='btn btn-outline-dark btn-sm' onClick={() => this.setState({isScanning: true})}>Scan QR
-            Code
-          </button>
+          <button className='btn btn-outline-dark btn-sm' onClick={() => this.setState({isScanning: true})}>📷 Scan</button>
           <input className='form-control' type="text" value={this.state.hcert}
-                 onChange={(e) => this.setState({hcert: e.target.value})} placeholder="HC1:"/>
+                 onChange={({target}) => this.setState({hcert: target.value})} placeholder="HC1:"/>
           <div className="input-group-append">
-            <Button variant="success" size='sm' onClick={this.onAppend}>Append</Button>
-            <Button variant='danger' size='sm' onClick={() => this.setState({cards: []})}>Clear</Button>
-            <Button variant='secondary' size='sm' onClick={window.print}>Print</Button>
+            <Button variant="success" size='sm' onClick={this.onAppend}>➕ Append</Button>
+            <Button variant='secondary' size='sm' onClick={window.print}>🖨️ Print</Button>
+            <Button variant='danger' size='sm' onClick={() => this.setState({cards: [], hcert: ''})}>Clear</Button>
           </div>
         </div>
       </Jumbotron>
