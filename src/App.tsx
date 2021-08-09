@@ -19,14 +19,23 @@ class App extends React.Component<object, State> {
       cards: []
     }
     this.onAppend = this.onAppend.bind(this)
+    this.appendHCERT = this.appendHCERT.bind(this)
+  }
+
+  appendHCERT(hcert?: string) {
+    const newCards = (hcert ?? this.state.hcert).trim().split('\n').filter(e => e.startsWith('HC1:')).map((e: string) => <CovidCard hcert={e} />)
+    this.setState({
+      cards: [...this.state.cards, ...newCards],
+      hcert: '',
+      isScanning: false
+    })
   }
 
   onAppend() {
-    if (this.state.hcert.startsWith('HC1:')) {
-      this.setState({cards: [...this.state.cards, <CovidCard hcert={this.state.hcert} />]})
-    } else {
-      alert('QR content must starts with HC1:')
+    if (!this.state.hcert.startsWith('HC1:')) {
+      return alert('QR content must starts with HC1:')
     }
+    this.appendHCERT(this.state.hcert)
   }
 
   render() {
@@ -37,7 +46,7 @@ class App extends React.Component<object, State> {
         </Modal.Header>
         <Modal.Body>
           <QrReader
-            onScan={hcert => hcert !== null && hcert.startsWith('HC1:') && this.setState({cards: [...this.state.cards, <CovidCard hcert={hcert}/>], isScanning: false})}
+            onScan={hcert => hcert !== null && hcert.startsWith('HC1:') && this.appendHCERT(hcert)}
             onError={console.log}
             facingMode='environment'
             style={{width: '100%'}}
@@ -52,9 +61,10 @@ class App extends React.Component<object, State> {
       </Modal>
       <Jumbotron fluid={true} className='noprint'>
         <h3>Print EU Digital COVID Certificate</h3>
+        <p>This tool respects your personal data. The COVID certificate is decoded on your device and no information about it is sent anywhere.</p>
         <div className="input-group input-group">
           <button className='btn btn-outline-dark' onClick={() => this.setState({isScanning: true})}>📷</button>
-          <input className='form-control' type="text" value={this.state.hcert}
+          <textarea className='form-control' value={this.state.hcert}
                  onChange={({target}) => this.setState({hcert: target.value})} placeholder="HC1:"/>
           <div className="btn-group">
             <Button variant="success" onClick={this.onAppend}>✅</Button>

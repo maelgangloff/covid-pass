@@ -24,3 +24,8 @@ body {
 .close {
   visibility: hidden;
 }
+
+textarea {
+  white-space: nowrap;
+  overflow: auto;
+}
