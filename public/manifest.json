@@ -1,0 +1,9 @@
+{
+  "lang": "en",
+  "orientation": "portrait-primary",
+  "theme_color": "#58d68d",
+  "name": "Generate EU Digital COVID Certificate card",
+  "short_name": "EUDCC Card Generator",
+  "start_url": "/",
+  "display": "standalone"
+}

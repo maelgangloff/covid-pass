@@ -1,71 +1,83 @@
 input {
-    @media print {
-        visibility: hidden;
-    }
+  @media print {
+    visibility: hidden;
+  }
 }
+
 table {
-    text-align: center;
-    border-collapse: collapse;
-    display: flex;
-    justify-content: center;
-    break-inside: avoid;
+  text-align: center;
+  border-collapse: collapse;
+  display: flex;
+  justify-content: center;
+  break-inside: avoid;
+
+  td {
+    border: 1px solid;
+    @media print {
+      width: 8.5cm;
+      height: 5.5cm;
+    }
+
+    h4 {
+      font-family: Arial, sans-serif;
+      margin-top: 0;
+      margin-bottom: 2mm;
+    }
+
+    h2 {
+      margin-top: 0;
+      margin-bottom: 3mm;
+      font-family: Arial, sans-serif;
+      font-weight: bold;
+    }
+
+    svg {
+      margin: auto;
+      display: block;
+      @media print {
+        height: 4cm;
+        width: 4cm;
+      }
+    }
+
+    p {
+      font-size: small;
+      margin: 0;
+      padding: 0;
+    }
+
+    p.name {
+      font-weight: bold;
+    }
+  }
+
+  .infos {
+    font-size: xx-small;
 
     td {
-        border: 1px solid;
-        @media print {
-            width: 8.5cm;
-            height: 5.5cm;
-        }
-        h4 {
-            font-family: Arial, sans-serif;
-            margin-top: 0;
-            margin-bottom: 2mm;
-        }
-        h2 {
-            margin-top: 0;
-            margin-bottom: 3mm;
-            font-family: Arial, sans-serif;
-            font-weight: bold;
-        }
-        svg {
-            margin: auto;
-            display: block;
-            @media print {
-                height: 4cm;
-                width: 4cm;
-            }
-        }
-        p {
-            font-size: small;
-            margin: 0;
-            padding: 0;
-        }
-        p.name {
-            font-weight: bold;
-        }
+      border: 0;
+      height: auto;
+      width: auto;
     }
-    .infos {
-        font-size: xx-small;
-        td {
-            border: 0;
-            height: auto;
-            width: auto;
-        }
-        tr {
-            :first-child {
-                text-align: left;
-            }
-            :last-child {
-                text-align: right;
-                font-weight: bold;
-            }
-        }
+
+    tr {
+      :first-child {
+        text-align: left;
+      }
+
+      :last-child {
+        text-align: right;
+        font-weight: bold;
+      }
     }
-    p.fingerprint {
-        padding-top: 8px;
-        font-size: 8px;
-    }
+  }
+
+  p.fingerprint {
+    padding-top: 8px;
+    font-size: 8px;
+  }
 }
+
 .uci {
-    font-size: 7px;
+  font-size: 7px;
 }

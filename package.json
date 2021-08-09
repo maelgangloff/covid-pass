@@ -29,6 +29,7 @@
     "zlib": "^1.0.5"
   },
   "scripts": {
+    "lint": "eslint src/**/*.ts[x]",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
@@ -54,6 +55,14 @@
   },
   "devDependencies": {
     "@types/qrcode.react": "^1.0.2",
-    "@types/react-qr-reader": "^2.1.4"
+    "@types/react-qr-reader": "^2.1.4",
+    "@typescript-eslint/eslint-plugin": "^4.29.0",
+    "@typescript-eslint/parser": "^4.29.0",
+    "eslint": "^7.12.1",
+    "eslint-config-standard": "^16.0.3",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^5.0.0",
+    "eslint-plugin-react": "^7.24.0"
   }
 }
