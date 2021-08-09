@@ -1,7 +1,9 @@
 import React from 'react'
-import { CovidCard } from './components/CovidCard'
+import { CovidCard, HCERT_PREFIX } from './components/CovidCard'
 import { Modal, Button, Jumbotron } from 'react-bootstrap'
 import QrReader from 'react-qr-reader'
+
+const TAC_WALLET_DCC_URL = `https://bonjour.tousanticovid.gouv.fr/app/walletdcc#${HCERT_PREFIX}`
 
 interface State {
   hcert: string,
@@ -19,10 +21,11 @@ class App extends React.Component<object, State> {
     }
     this.onAppend = this.onAppend.bind(this)
     this.appendHCERT = this.appendHCERT.bind(this)
+    this.onScan = this.onScan.bind(this)
   }
 
   appendHCERT (hcert?: string) {
-    const newCards = (hcert ?? this.state.hcert).trim().split('\n').filter(e => e.startsWith('HC1:')).map((e: string) =>
+    const newCards = (hcert ?? this.state.hcert).trim().split('\n').filter(e => e.startsWith(HCERT_PREFIX)).map((e: string) =>
       <CovidCard key={e} hcert={e}/>)
     this.setState({
       cards: [...this.state.cards, ...newCards],
@@ -31,9 +34,20 @@ class App extends React.Component<object, State> {
     })
   }
 
+  onScan (qr: string | null) {
+    if (qr === null) return
+    if (qr.startsWith(HCERT_PREFIX)) {
+      return this.appendHCERT(qr)
+    }
+    if (qr.startsWith(TAC_WALLET_DCC_URL)) {
+      console.log(qr)
+      return this.appendHCERT(decodeURI(qr.replace(TAC_WALLET_DCC_URL.substr(0, TAC_WALLET_DCC_URL.length - HCERT_PREFIX.length), '')))
+    }
+  }
+
   onAppend () {
-    if (!this.state.hcert.startsWith('HC1:')) {
-      return alert('QR content must starts with HC1:')
+    if (!this.state.hcert.startsWith(HCERT_PREFIX)) {
+      return alert(`QR content must starts with ${HCERT_PREFIX}`)
     }
     this.appendHCERT(this.state.hcert)
   }
@@ -46,7 +60,7 @@ class App extends React.Component<object, State> {
         </Modal.Header>
         <Modal.Body>
           <QrReader
-            onScan={hcert => hcert !== null && hcert.startsWith('HC1:') && this.appendHCERT(hcert)}
+            onScan={this.onScan}
             onError={console.log}
             facingMode='environment'
             style={{ width: '100%' }}
@@ -66,7 +80,7 @@ class App extends React.Component<object, State> {
         <div className="input-group input-group">
           <button className='btn btn-outline-dark' onClick={() => this.setState({ isScanning: true })}>📷</button>
           <textarea className='form-control' value={this.state.hcert}
-                    onChange={({ target }) => this.setState({ hcert: target.value })} placeholder="HC1:"/>
+                    onChange={({ target }) => this.setState({ hcert: target.value })} placeholder={HCERT_PREFIX} />
           <div className="btn-group">
             <Button variant="success" onClick={this.onAppend}>✅</Button>
             <Button variant='secondary' onClick={window.print}>🖨️</Button>

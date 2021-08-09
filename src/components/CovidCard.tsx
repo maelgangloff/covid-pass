@@ -7,6 +7,8 @@ import { EUDCC } from '../types/dgc-combined-schema'
 import QRCode from 'qrcode.react'
 import crypto from 'crypto'
 
+export const HCERT_PREFIX = 'HC1:'
+
 type DecodedQRCode = {
   header: {
     alg: number,
@@ -30,9 +32,9 @@ interface State {
 }
 
 function decodeQRCode (hcert: string): DecodedQRCode | null {
-  if (!hcert.startsWith('HC1:')) throw new Error('QR content must starts with HC1.')
+  if (!hcert.startsWith(HCERT_PREFIX)) throw new Error(`QR content must starts with ${HCERT_PREFIX}`)
   try {
-    const { value } = cbor.decodeFirstSync(zlib.inflateSync(base45.decode(hcert.substr(4, hcert.length))))
+    const { value } = cbor.decodeFirstSync(zlib.inflateSync(base45.decode(hcert.substr(HCERT_PREFIX.length, hcert.length))))
     const rawPayload = cbor.decodeFirstSync(value[2])
     const rawHeader = cbor.decodeFirstSync(value[0])
 
