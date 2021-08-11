@@ -51,9 +51,9 @@ export function getPublicKey (publicKeyId: string): string {
 export function getSex (sex: string): string {
   switch (sex) {
     case 'M':
-      return 'Men'
+      return 'Male'
     case 'F':
-      return 'Women'
+      return 'Female'
     default:
       return 'Unknown'
   }
