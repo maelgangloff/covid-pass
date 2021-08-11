@@ -1,10 +1,12 @@
 import React from 'react'
-import { CovidCard, DDOC_PREFIX, EUDCC_PREFIX } from './components/CovidCard'
+import { CovidCard } from './components/CovidCard'
 import { Button, Jumbotron, Modal } from 'react-bootstrap'
 import QrReader from 'react-qr-reader'
+import { EUDCC_PREFIX } from './converters/eudcc'
+import { DDOC_PREFIX } from './converters/2ddoc'
 
 const TAC_WALLET_DCC_URL = `https://bonjour.tousanticovid.gouv.fr/app/walletdcc#${EUDCC_PREFIX}`
-const TAC_WALLET_DDOC_URL = 'https://bonjour.tousanticovid.gouv.fr/app/wallet?v='
+const TAC_WALLET_DDOC_URL = `https://bonjour.tousanticovid.gouv.fr/app/wallet?v=${DDOC_PREFIX}`
 
 interface State {
   hcert: string
@@ -44,7 +46,7 @@ class App extends React.Component<object, State> {
       return this.appendHCERT(decodeURI(qr.replace(TAC_WALLET_DCC_URL.substr(0, TAC_WALLET_DCC_URL.length - EUDCC_PREFIX.length), '')))
     }
     if (qr.startsWith(TAC_WALLET_DDOC_URL)) {
-      return this.appendHCERT(decodeURI(qr.replace(TAC_WALLET_DDOC_URL, '')))
+      return this.appendHCERT(decodeURI(qr.replace(TAC_WALLET_DDOC_URL.substr(0, TAC_WALLET_DDOC_URL.length - DDOC_PREFIX.length), '')))
     }
   }
 
@@ -57,7 +59,7 @@ class App extends React.Component<object, State> {
 
   render () {
     return <>
-      <Modal show={this.state.isScanning} animation={false}>
+      <Modal show={this.state.isScanning} className='noprint'>
         <Modal.Header closeButton>
           <Modal.Title>Scan QR Code</Modal.Title>
         </Modal.Header>
@@ -76,7 +78,7 @@ class App extends React.Component<object, State> {
         </Modal.Footer>
       </Modal>
       <Jumbotron fluid={true} className='noprint'>
-        <h3>Imprimer Pass sanitaire / <span className='en'>Print Digital COVID Certificate</span></h3>
+        <h3>Imprimer Pass sanitaire <span className='en'>/ Print Digital COVID Certificate</span></h3>
         <p>Toutes les étapes sont effectuées sur votre terminal. Aucun échange de données n&apos;est effectué entre
           votre appareil et le serveur une fois la page chargée. <br/> <span className="en">This tool respects your personal data. The certificate is decoded on your device and no
           information

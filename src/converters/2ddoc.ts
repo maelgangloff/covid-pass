@@ -1,4 +1,6 @@
 /* eslint-disable camelcase */
+export const DDOC_PREFIX = 'DC'
+
 const ALPHA = {
   regex: 'A-Z\\-\\./ ',
   parse: (s: string) => s
@@ -167,7 +169,7 @@ const TEST_REGEX = TEST_FIELDS.map((x) => fieldRegex<PossibleFieldType>(x)).join
 const VACCINE_REGEX = VACCINE_FIELDS.map((x) => fieldRegex<PossibleFieldType>(x)).join('')
 
 const HEADER_REGEX =
-'DC' +
+DDOC_PREFIX +
 '(?<document_version>[0-9]{2})' +
 '(?<certificate_authority_id>[A-Z\\d]{4})' +
 '(?<public_key_id>[A-Z\\d]{4})' +
@@ -214,7 +216,7 @@ function getCertificateInfo (cert: Certificate2ddoc): CommonCertificateInfo {
   throw new Error('Unsupported or empty certificate: ' + JSON.stringify(cert))
 }
 
-export async function parse (doc: string): Promise<CommonCertificateInfo> {
+export async function decode2DDoc (doc: string): Promise<CommonCertificateInfo> {
   const groups = doc.match(TOTAL_REGEX)?.groups
   if (!groups) throw new Error('Format de certificat invalide')
   const fields = groups.document_type === 'B2' ? TEST_FIELDS : VACCINE_FIELDS
