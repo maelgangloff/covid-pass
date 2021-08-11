@@ -1,15 +1,31 @@
+/* eslint-disable no-unused-vars */
 import React from 'react'
 import '../style/card.scss'
-import base45 from 'base45'
+import * as base45 from 'base45'
 import zlib from 'zlib'
 import cbor from 'cbor'
-import { EUDCC } from '../types/dgc-combined-schema'
-import QRCode from 'qrcode.react'
-import crypto from 'crypto'
+import { EUDCC, RecoveryEntry, TestEntry, VaccinationEntry } from '../types/dgc-combined-schema'
 
-export const HCERT_PREFIX = 'HC1:'
+import {
+  getCertificateAuthority,
+  getPublicKey,
+  parse,
+  VaccineCertificate,
+  CommonCertificateInfo,
+  TestCertificate, getAnalysisResult
+} from '../2ddoc'
+import bwipjs from 'bwip-js'
+import * as crypto from 'crypto'
 
-type DecodedQRCode = {
+export enum DocType {
+  EUDCC,
+  DDOC
+}
+
+export const EUDCC_PREFIX = 'HC1:'
+export const DDOC_PREFIX = 'DC'
+
+type DecodedEUDCC = {
   header: {
     alg: number,
     kid: string
@@ -24,169 +40,284 @@ type DecodedQRCode = {
 }
 
 interface Props {
-  hcert: string
+  data: string
 }
 
 interface State {
-  hcert: DecodedQRCode | null
+  eudcc?: DecodedEUDCC | null
+  ddoc?: CommonCertificateInfo
+  docType: DocType
 }
 
-function decodeQRCode (hcert: string): DecodedQRCode | null {
-  if (!hcert.startsWith(HCERT_PREFIX)) throw new Error(`QR content must starts with ${HCERT_PREFIX}`)
-  try {
-    const { value } = cbor.decodeFirstSync(zlib.inflateSync(base45.decode(hcert.substr(HCERT_PREFIX.length, hcert.length))))
-    const rawPayload = cbor.decodeFirstSync(value[2])
-    const rawHeader = cbor.decodeFirstSync(value[0])
+type PassType = 'VACCINATION' | 'TEST' | 'RECOVERY'
 
-    const header = { alg: rawHeader.get(1), kid: rawHeader.get(4).toString('base64') }
-    const payload = {
-      iss: rawPayload.get(1),
-      iat: new Date(rawPayload.get(6) * 1000).toISOString(),
-      exp: new Date(rawPayload.get(4) * 1000).toISOString(),
-      hcert: rawPayload.get(-260).get(1)
-    }
+function decodeEUDCC (hcert: string): DecodedEUDCC | null {
+  if (!hcert.startsWith(EUDCC_PREFIX)) throw new Error(`QR content must starts with ${EUDCC_PREFIX}`)
+  const { value } = cbor.decodeFirstSync(zlib.inflateSync(base45.decode(hcert.substr(EUDCC_PREFIX.length, hcert.length))))
+  const rawPayload = cbor.decodeFirstSync(value[2])
+  const rawHeader = cbor.decodeFirstSync(value[0])
 
-    return {
-      header,
-      payload,
-      sig: value[3].toString('base64')
-    }
-  } catch (e) {
-    return null
+  const header = { alg: rawHeader.get(1), kid: rawHeader.get(4).toString('base64') }
+  const payload = {
+    iss: rawPayload.get(1),
+    iat: new Date(rawPayload.get(6) * 1000).toISOString(),
+    exp: new Date(rawPayload.get(4) * 1000).toISOString(),
+    hcert: rawPayload.get(-260).get(1)
   }
+
+  return {
+    header,
+    payload,
+    sig: value[3].toString('base64')
+  }
+}
+
+function EUCCInfoTable (passType: PassType, eudcc?: VaccinationEntry | TestEntry | RecoveryEntry) {
+  return <>
+    <tr>
+      <td>Unique certificate identifier</td>
+      <td className="uci">{eudcc?.ci}</td>
+    </tr>
+    <tr>
+      <td>Certificate issuer</td>
+      <td>{eudcc?.is}</td>
+    </tr>
+    <tr>
+      <td>Country of {passType === 'VACCINATION' ? 'vaccination' : 'test'}</td>
+      <td>{eudcc?.co}</td>
+    </tr>
+    {
+      passType === 'VACCINATION' && <>
+        <tr>
+          <td>Disease or agent targeted</td>
+          <td>{eudcc?.tg}</td>
+        </tr>
+        <tr>
+          <td>Vaccine or prophylaxis</td>
+          <td>{eudcc?.vp as string}</td>
+        </tr>
+        <tr>
+          <td>Vaccine product</td>
+          <td>{eudcc?.mp as string}</td>
+        </tr>
+        <tr>
+          <td>Vaccine marketing authorization holder</td>
+          <td>{eudcc?.ma as string}</td>
+        </tr>
+        <tr>
+          <td>Number in a series of doses</td>
+          <td>{eudcc?.dn as string}</td>
+        </tr>
+        <tr>
+          <td>The overall number of doses</td>
+          <td>{eudcc?.sd as string}</td>
+        </tr>
+        <tr>
+          <td>Date of vaccination</td>
+          <td>{eudcc?.dt as string}</td>
+        </tr>
+      </>
+    }
+    {
+      passType === 'TEST' && <>
+        <tr>
+          <td>Disease or agent targeted</td>
+          <td>{eudcc?.tg}</td>
+        </tr>
+        <tr>
+          <td>The type of test</td>
+          <td>{eudcc?.tt as string}</td>
+        </tr>
+        <tr>
+          <td>The name of the NAAT used</td>
+          <td>{eudcc?.nm as string}</td>
+        </tr>
+        <tr>
+          <td>The device identifier of the RAT used</td>
+          <td>{eudcc?.ma as string}</td>
+        </tr>
+        <tr>
+          <td>Date and time of the test sample collection</td>
+          <td>{eudcc?.sc as string}</td>
+        </tr>
+        <tr>
+          <td>Result of the test</td>
+          <td>{eudcc?.tr as string}</td>
+        </tr>
+        <tr>
+          <td>Testing centre or facility</td>
+          <td>{eudcc?.tc as string}</td>
+        </tr>
+      </>
+    }
+    {
+      passType === 'RECOVERY' && <>
+        <tr>
+          <td>Disease or agent targeted</td>
+          <td>{eudcc?.tg}</td>
+        </tr>
+        <tr>
+          <td>Date of the holder&rsquo;s first positive</td>
+          <td>{eudcc?.fr as string}</td>
+        </tr>
+        <tr>
+          <td>Certificate issuer</td>
+          <td>{eudcc?.is as string}</td>
+        </tr>
+        <tr>
+          <td>Certificate valid from</td>
+          <td>{eudcc?.df as string}</td>
+        </tr>
+        <tr>
+          <td>Certificate valid until</td>
+          <td>{eudcc?.du as string}</td>
+        </tr>
+      </>
+    }
+  </>
+}
+
+const formatDate = (date: Date) => date.toISOString().split('T')[0]
+const formatDateTime = (date: Date) => {
+  const dateISO = date.toISOString().split('T')[0]
+  const timeISO = date.toISOString().replace(dateISO + 'T', '').split('.')[0]
+  return dateISO + ' ' + timeISO
+}
+
+function DDOCInfoTable (ddoc?: CommonCertificateInfo) {
+  return <>
+    <tr>
+      <td>Issuing country</td>
+      <td>{ddoc?.source.cert.document_country}</td>
+    </tr>
+    <tr>
+      <td>Certificate authority</td>
+      <td>{getCertificateAuthority(ddoc?.source.cert.certificate_authority_id as string)}</td>
+    </tr>
+    <tr>
+      <td>Encryption key</td>
+      <td>{getPublicKey(ddoc?.source.cert.public_key_id as string)}</td>
+    </tr>
+    <tr>
+      <td>Type of document</td>
+      <td>{ddoc?.source.cert.document_type}</td>
+    </tr>
+    {
+      ddoc?.type === 'vaccination'
+        ? <>
+        <tr>
+          <td>Doses received</td>
+          <td>{ddoc?.doses_received}</td>
+        </tr>
+        <tr>
+          <td>Doses expected</td>
+          <td>{ddoc?.doses_expected}</td>
+        </tr>
+        <tr>
+          <td>Prophylactic agent</td>
+          <td>{ddoc?.prophylactic_agent}</td>
+        </tr>
+        <tr>
+          <td>Date of vaccination</td>
+          <td>{formatDate((ddoc.source.cert as VaccineCertificate).last_dose_date)}</td>
+        </tr>
+        <tr>
+          <td>Vaccination cycle state</td>
+          <td>{(ddoc.source.cert as VaccineCertificate).cycle_state}</td>
+        </tr>
+        <tr>
+          <td>Disease</td>
+          <td>{(ddoc.source.cert as VaccineCertificate).disease}</td>
+        </tr>
+        <tr>
+          <td>Vaccine name</td>
+          <td>{(ddoc.source.cert as VaccineCertificate).vaccine}</td>
+        </tr>
+        <tr>
+          <td>Vaccine manufacturer</td>
+          <td>{(ddoc.source.cert as VaccineCertificate).vaccine_maker}</td>
+        </tr>
+      </>
+        : <>
+        <tr>
+          <td>Gender</td>
+          <td>{(ddoc?.source.cert as TestCertificate).sex}</td>
+        </tr>
+        <tr>
+          <td>Analysis code</td>
+          <td>{(ddoc?.source.cert as TestCertificate).analysis_code}</td>
+        </tr>
+        <tr>
+          <td>Analysis date/time</td>
+          <td>{ formatDateTime((ddoc?.source.cert as TestCertificate).analysis_datetime) }</td>
+        </tr>
+        <tr>
+          <td>Result</td>
+          <td>{getAnalysisResult((ddoc?.source.cert as TestCertificate).analysis_result)}</td>
+        </tr>
+      </>
+    }
+  </>
 }
 
 export class CovidCard extends React.Component<Props, State> {
   constructor (props: Props) {
     super(props)
-    this.state = { hcert: decodeQRCode(props.hcert) }
+    this.state = {
+      docType: props.data.trim().startsWith(EUDCC_PREFIX) ? DocType.EUDCC : DocType.DDOC
+    }
+  }
+
+  componentDidMount () {
+    try {
+      switch (this.state.docType) {
+        case DocType.EUDCC:
+          this.setState({ eudcc: decodeEUDCC(this.props.data) })
+          break
+        case DocType.DDOC:
+          parse(this.props.data).then(ddoc => this.setState({ ddoc }))
+          break
+        default:
+          throw new Error('Not a certificate.')
+      }
+    } catch (e) {
+      console.error(e)
+    }
   }
 
   render () {
-    const { hcert } = this.state
-    if (hcert === null) return <></>
-    const { payload: { hcert: certificate } } = hcert
-    const passType = 'v' in certificate ? 'VACCINATION' : 't' in certificate ? 'TEST' : 'RECOVERY'
-    const certData = passType === 'VACCINATION' ? certificate.v : passType === 'TEST' ? certificate.t : certificate.r
-    if (certData === undefined) return <></>
-    const [cert] = certData
+    if (this.state.eudcc === undefined && this.state.ddoc === undefined) {
+      return <>
+      <canvas className="bwipjs"/>
+    </>
+    }
+    const passType = this.state.docType === DocType.DDOC ? this.state.ddoc?.type.toUpperCase() as PassType : this.state.eudcc?.payload.hcert ? 'v' in this.state.eudcc?.payload.hcert ? 'VACCINATION' : 't' in this.state.eudcc?.payload.hcert ? 'TEST' : 'RECOVERY' : 'VACCINATION'
+    const eudccEntry = passType === 'VACCINATION' ? this.state.eudcc?.payload.hcert.v : passType === 'TEST' ? this.state.eudcc?.payload.hcert.t : this.state.eudcc?.payload.hcert.r
+    const [eudcc] = eudccEntry || []
     return <table>
       <tbody>
       <tr>
         <td>
           <h4>EU Digital COVID Certificate</h4>
-          {<QRCode value={this.props.hcert} renderAs="svg" level="L" size={100}/>}
-          <p className="name">{certificate?.nam?.gn} {certificate?.nam?.fn}</p>
-          <p>Date of birth {certificate.dob}</p>
+          {<img src={bwipjs.toCanvas('.bwipjs', {
+            bcid: this.state.docType === DocType.EUDCC ? 'qrcode' : 'datamatrix',
+            scale: 3,
+            text: this.props.data
+          }).toDataURL()}/>}
+          <p
+            className="name">{this.state.eudcc?.payload.hcert.nam?.gn || this.state.ddoc?.first_name} {this.state.eudcc?.payload.hcert.nam?.fn || this.state.ddoc?.last_name}</p>
+          <p>Date of
+            birth {this.state.eudcc?.payload.hcert.dob || formatDate(this.state.ddoc?.date_of_birth as Date)}</p>
         </td>
         <td>
           <h2>{passType}</h2>
           <table className="infos">
             <tbody>
-            <tr>
-              <td>Unique certificate identifier</td>
-              <td className="uci">{cert.ci as string}</td>
-            </tr>
-            <tr>
-              <td>Certificate issuer</td>
-              <td>{cert.is as string}</td>
-            </tr>
-            <tr>
-              <td>Country of {passType === 'VACCINATION' ? 'vaccination' : 'test'}</td>
-              <td>{cert.co as string}</td>
-            </tr>
-            {
-              'v' in certificate && <>
-                <tr>
-                  <td>Disease or agent targeted</td>
-                  <td>{cert.tg as string}</td>
-                </tr>
-                <tr>
-                  <td>Vaccine or prophylaxis</td>
-                  <td>{cert.vp as string}</td>
-                </tr>
-                <tr>
-                  <td>Vaccine product</td>
-                  <td>{cert.mp as string}</td>
-                </tr>
-                <tr>
-                  <td>Vaccine marketing authorization holder</td>
-                  <td>{cert.ma as string}</td>
-                </tr>
-                <tr>
-                  <td>Number in a series of doses</td>
-                  <td>{cert.dn as string}</td>
-                </tr>
-                <tr>
-                  <td>The overall number of doses</td>
-                  <td>{cert.sd as string}</td>
-                </tr>
-                <tr>
-                  <td>Date of vaccination</td>
-                  <td>{cert.dt as string}</td>
-                </tr>
-              </>
-            }
-            {
-              't' in certificate && <>
-                <tr>
-                  <td>Disease or agent targeted</td>
-                  <td>{cert.tg as string}</td>
-                </tr>
-                <tr>
-                  <td>The type of test</td>
-                  <td>{cert.tt as string}</td>
-                </tr>
-                <tr>
-                  <td>The name of the NAAT used</td>
-                  <td>{cert.nm as string}</td>
-                </tr>
-                <tr>
-                  <td>The device identifier of the RAT used</td>
-                  <td>{cert.ma as string}</td>
-                </tr>
-                <tr>
-                  <td>Date and time of the test sample collection</td>
-                  <td>{cert.sc as string}</td>
-                </tr>
-                <tr>
-                  <td>Result of the test</td>
-                  <td>{cert.tr as string}</td>
-                </tr>
-                <tr>
-                  <td>Testing centre or facility</td>
-                  <td>{cert.tc as string}</td>
-                </tr>
-              </>
-            }
-            {
-              'r' in certificate && <>
-                <tr>
-                  <td>Disease or agent targeted</td>
-                  <td>{cert.tg as string}</td>
-                </tr>
-                <tr>
-                  <td>Date of the holder&rsquo;s first positive</td>
-                  <td>{cert.fr as string}</td>
-                </tr>
-                <tr>
-                  <td>Certificate issuer</td>
-                  <td>{cert.is as string}</td>
-                </tr>
-                <tr>
-                  <td>Certificate valid from</td>
-                  <td>{cert.df as string}</td>
-                </tr>
-                <tr>
-                  <td>Certificate valid until</td>
-                  <td>{cert.du as string}</td>
-                </tr>
-              </>
-            }
+            {this.state.docType === DocType.EUDCC ? EUCCInfoTable(passType, eudcc) : DDOCInfoTable(this.state.ddoc)}
             </tbody>
           </table>
-          <p
-            className="fingerprint">{crypto.createHash('sha256').update(cert.co.toUpperCase() + cert.ci).digest('hex')}</p>
+          {this.state.docType === DocType.EUDCC && <p
+            className="fingerprint">{crypto.createHash('sha256').update(eudcc?.co.toUpperCase() as string + eudcc?.ci).digest('hex')}</p>}
         </td>
       </tr>
       </tbody>

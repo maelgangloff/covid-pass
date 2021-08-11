@@ -1,13 +1,14 @@
 import React from 'react'
-import { CovidCard, HCERT_PREFIX } from './components/CovidCard'
-import { Modal, Button, Jumbotron } from 'react-bootstrap'
+import { CovidCard, DDOC_PREFIX, EUDCC_PREFIX } from './components/CovidCard'
+import { Button, Jumbotron, Modal } from 'react-bootstrap'
 import QrReader from 'react-qr-reader'
 
-const TAC_WALLET_DCC_URL = `https://bonjour.tousanticovid.gouv.fr/app/walletdcc#${HCERT_PREFIX}`
+const TAC_WALLET_DCC_URL = `https://bonjour.tousanticovid.gouv.fr/app/walletdcc#${EUDCC_PREFIX}`
+const TAC_WALLET_DDOC_URL = 'https://bonjour.tousanticovid.gouv.fr/app/wallet?v='
 
 interface State {
-  hcert: string,
-  cards: JSX.Element[],
+  hcert: string
+  cards: JSX.Element[]
   isScanning: boolean
 }
 
@@ -25,8 +26,8 @@ class App extends React.Component<object, State> {
   }
 
   appendHCERT (hcert?: string) {
-    const newCards = (hcert ?? this.state.hcert).trim().split('\n').filter(e => e.startsWith(HCERT_PREFIX)).map((e: string) =>
-      <CovidCard key={e} hcert={e}/>)
+    const newCards = (hcert ?? this.state.hcert).trim().split('\n').filter(e => e.startsWith(EUDCC_PREFIX) || e.startsWith(DDOC_PREFIX)).map(e =>
+      <CovidCard key={Date.now()} data={e}/>)
     this.setState({
       cards: [...this.state.cards, ...newCards],
       hcert: '',
@@ -36,18 +37,20 @@ class App extends React.Component<object, State> {
 
   onScan (qr: string | null) {
     if (qr === null) return
-    if (qr.startsWith(HCERT_PREFIX)) {
+    if (qr.startsWith(EUDCC_PREFIX) || qr.startsWith(DDOC_PREFIX)) {
       return this.appendHCERT(qr)
     }
     if (qr.startsWith(TAC_WALLET_DCC_URL)) {
-      console.log(qr)
-      return this.appendHCERT(decodeURI(qr.replace(TAC_WALLET_DCC_URL.substr(0, TAC_WALLET_DCC_URL.length - HCERT_PREFIX.length), '')))
+      return this.appendHCERT(decodeURI(qr.replace(TAC_WALLET_DCC_URL.substr(0, TAC_WALLET_DCC_URL.length - EUDCC_PREFIX.length), '')))
+    }
+    if (qr.startsWith(TAC_WALLET_DDOC_URL)) {
+      return this.appendHCERT(decodeURI(qr.replace(TAC_WALLET_DDOC_URL, '')))
     }
   }
 
   onAppend () {
-    if (!this.state.hcert.startsWith(HCERT_PREFIX)) {
-      return alert(`QR content must starts with ${HCERT_PREFIX}`)
+    if (!this.state.hcert.startsWith(EUDCC_PREFIX) && !this.state.hcert.startsWith(DDOC_PREFIX)) {
+      return alert(`QR content must starts with ${EUDCC_PREFIX} or ${DDOC_PREFIX}`)
     }
     this.appendHCERT(this.state.hcert)
   }
@@ -64,7 +67,6 @@ class App extends React.Component<object, State> {
             onError={console.log}
             facingMode='environment'
             style={{ width: '100%' }}
-            showViewFinder={true}
           />
         </Modal.Body>
         <Modal.Footer>
@@ -80,7 +82,7 @@ class App extends React.Component<object, State> {
         <div className="input-group input-group">
           <button className='btn btn-outline-dark' onClick={() => this.setState({ isScanning: true })}>📷</button>
           <textarea className='form-control' value={this.state.hcert}
-                    onChange={({ target }) => this.setState({ hcert: target.value })} placeholder={HCERT_PREFIX} />
+                    onChange={({ target }) => this.setState({ hcert: target.value })} placeholder={`${EUDCC_PREFIX} | ${DDOC_PREFIX}`} />
           <div className="btn-group">
             <Button variant="success" onClick={this.onAppend}>✅</Button>
             <Button variant='secondary' onClick={window.print}>🖨️</Button>

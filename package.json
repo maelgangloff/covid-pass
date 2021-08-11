@@ -16,9 +16,9 @@
     "@types/react-dom": "^17.0.0",
     "base45": "^3.0.0",
     "bootstrap": "^5.1.0",
+    "bwip-js": "^3.0.4",
     "cbor": "^8.0.0",
     "crypto": "^1.0.1",
-    "qrcode.react": "^1.0.1",
     "react": "^17.0.2",
     "react-bootstrap": "^1.6.1",
     "react-dom": "^17.0.2",
@@ -54,7 +54,7 @@
     ]
   },
   "devDependencies": {
-    "@types/qrcode.react": "^1.0.2",
+    "@types/bwip-js": "^2.1.1",
     "@types/react-qr-reader": "^2.1.4",
     "@typescript-eslint/eslint-plugin": "^4.29.0",
     "@typescript-eslint/parser": "^4.29.0",

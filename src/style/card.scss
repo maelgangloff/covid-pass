@@ -1,9 +1,3 @@
-input {
-  @media print {
-    visibility: hidden;
-  }
-}
-
 table {
   text-align: center;
   border-collapse: collapse;
@@ -31,9 +25,11 @@ table {
       font-weight: bold;
     }
 
-    svg {
+    svg, img {
       margin: auto;
       display: block;
+      height: 150px;
+      width: 150px;
       @media print {
         height: 4cm;
         width: 4cm;
@@ -80,4 +76,10 @@ table {
 
 .uci {
   font-size: 7px;
+}
+
+.bwipjs {
+  height: 0;
+  width: 0;
+  margin: 0;
 }
