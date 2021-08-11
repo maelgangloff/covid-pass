@@ -76,13 +76,19 @@ class App extends React.Component<object, State> {
         </Modal.Footer>
       </Modal>
       <Jumbotron fluid={true} className='noprint'>
-        <h3>Print EU Digital COVID Certificate</h3>
-        <p>This tool respects your personal data. The COVID certificate is decoded on your device and no information
-          about it is sent anywhere.</p>
+        <h3>Imprimer Pass sanitaire / <span className='en'>Print Digital COVID Certificate</span></h3>
+        <div className="disclaimer">
+          <p>Toutes les étapes sont effectuées sur votre terminal. Aucun échange de données n&apos;est effectué entre
+            votre appareil et le serveur une fois la page chargée.</p>
+          <p className='en'>This tool respects your personal data. The certificate is decoded on your device and no
+            information
+            about it is sent anywhere.</p>
+        </div>
         <div className="input-group input-group">
           <button className='btn btn-outline-dark' onClick={() => this.setState({ isScanning: true })}>📷</button>
           <textarea className='form-control' value={this.state.hcert}
-                    onChange={({ target }) => this.setState({ hcert: target.value })} placeholder={`${EUDCC_PREFIX} | ${DDOC_PREFIX}`} />
+                    onChange={({ target }) => this.setState({ hcert: target.value })}
+                    placeholder={`${EUDCC_PREFIX} | ${DDOC_PREFIX}`}/>
           <div className="btn-group">
             <Button variant="success" onClick={this.onAppend}>✅</Button>
             <Button variant='secondary' onClick={window.print}>🖨️</Button>

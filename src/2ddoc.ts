@@ -31,14 +31,8 @@ const CERTIFICATE_AUTHORITIES = new Map<string, string>([
   ['FR05', 'ANTS']
 ])
 
-export function getCertificateAuthority (certificateAuthorityId: string): string | undefined {
-  const certificateAuthority = CERTIFICATE_AUTHORITIES.get(certificateAuthorityId)
-
-  if (certificateAuthority === undefined) {
-    return 'Autorité inconnue'
-  }
-
-  return certificateAuthority
+export function getCertificateAuthority (certificateAuthorityId: string): string {
+  return CERTIFICATE_AUTHORITIES.get(certificateAuthorityId) ?? 'Unknown'
 }
 
 const PUBLIC_KEYS = new Map<string, string>([
@@ -48,24 +42,18 @@ const PUBLIC_KEYS = new Map<string, string>([
   ['AV02', 'CNAM']
 ])
 
-export function getPublicKey (publicKeyId: string): string | undefined {
-  const publicKey = PUBLIC_KEYS.get(publicKeyId)
-
-  if (publicKey === undefined) {
-    return 'Certificat inconnu'
-  }
-
-  return publicKey
+export function getPublicKey (publicKeyId: string): string {
+  return PUBLIC_KEYS.get(publicKeyId) ?? 'Unknown'
 }
 
 export function getSex (sex: string): string {
   switch (sex) {
     case 'M':
-      return 'Masculin'
+      return 'Men'
     case 'F':
-      return 'Féminin'
+      return 'Women'
     default:
-      return 'Inconnu'
+      return 'Unknown'
   }
 }
 
@@ -246,7 +234,6 @@ export interface CommonTestInfo {
   type: 'test';
   test_date: Date;
   is_negative: boolean;
-/// Set to true if the test did not give a conclusive result.
   is_inconclusive: boolean;
 }
 

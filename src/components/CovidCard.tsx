@@ -12,7 +12,7 @@ import {
   parse,
   VaccineCertificate,
   CommonCertificateInfo,
-  TestCertificate, getAnalysisResult
+  TestCertificate, getAnalysisResult, getSex
 } from '../2ddoc'
 import bwipjs from 'bwip-js'
 import * as crypto from 'crypto'
@@ -51,6 +51,9 @@ interface State {
 
 type PassType = 'VACCINATION' | 'TEST' | 'RECOVERY'
 
+const formatDate = (date: Date) => date.toISOString().split('T')[0]
+const formatDateTime = (date: Date) => date.toISOString().split('.')[0]
+
 function decodeEUDCC (hcert: string): DecodedEUDCC | null {
   if (!hcert.startsWith(EUDCC_PREFIX)) throw new Error(`QR content must starts with ${EUDCC_PREFIX}`)
   const { value } = cbor.decodeFirstSync(zlib.inflateSync(base45.decode(hcert.substr(EUDCC_PREFIX.length, hcert.length))))
@@ -60,8 +63,8 @@ function decodeEUDCC (hcert: string): DecodedEUDCC | null {
   const header = { alg: rawHeader.get(1), kid: rawHeader.get(4).toString('base64') }
   const payload = {
     iss: rawPayload.get(1),
-    iat: new Date(rawPayload.get(6) * 1000).toISOString(),
-    exp: new Date(rawPayload.get(4) * 1000).toISOString(),
+    iat: formatDate(new Date(rawPayload.get(6) * 1E3)),
+    exp: formatDate(new Date(rawPayload.get(6) * 1E3)),
     hcert: rawPayload.get(-260).get(1)
   }
 
@@ -177,13 +180,6 @@ function EUCCInfoTable (passType: PassType, eudcc?: VaccinationEntry | TestEntry
   </>
 }
 
-const formatDate = (date: Date) => date.toISOString().split('T')[0]
-const formatDateTime = (date: Date) => {
-  const dateISO = date.toISOString().split('T')[0]
-  const timeISO = date.toISOString().replace(dateISO + 'T', '').split('.')[0]
-  return dateISO + ' ' + timeISO
-}
-
 function DDOCInfoTable (ddoc?: CommonCertificateInfo) {
   return <>
     <tr>
@@ -197,6 +193,10 @@ function DDOCInfoTable (ddoc?: CommonCertificateInfo) {
     <tr>
       <td>Encryption key</td>
       <td>{getPublicKey(ddoc?.source.cert.public_key_id as string)}</td>
+    </tr>
+    <tr>
+      <td>Signature date</td>
+      <td>{formatDate(ddoc?.source.cert.signature_date as Date)}</td>
     </tr>
     <tr>
       <td>Type of document</td>
@@ -241,7 +241,7 @@ function DDOCInfoTable (ddoc?: CommonCertificateInfo) {
         : <>
         <tr>
           <td>Gender</td>
-          <td>{(ddoc?.source.cert as TestCertificate).sex}</td>
+          <td>{getSex((ddoc?.source.cert as TestCertificate).sex)}</td>
         </tr>
         <tr>
           <td>Analysis code</td>
@@ -272,10 +272,10 @@ export class CovidCard extends React.Component<Props, State> {
     try {
       switch (this.state.docType) {
         case DocType.EUDCC:
-          this.setState({ eudcc: decodeEUDCC(this.props.data) })
+          this.setState({ eudcc: decodeEUDCC(this.props.data.trim()) })
           break
         case DocType.DDOC:
-          parse(this.props.data).then(ddoc => this.setState({ ddoc }))
+          parse(this.props.data.trim()).then(ddoc => this.setState({ ddoc }))
           break
         default:
           throw new Error('Not a certificate.')
@@ -298,11 +298,11 @@ export class CovidCard extends React.Component<Props, State> {
       <tbody>
       <tr>
         <td>
-          <h4>EU Digital COVID Certificate</h4>
+          <h4>{this.state.docType === DocType.EUDCC ? 'EU Digital COVID Certificate' : '2D-Doc'}</h4>
           {<img src={bwipjs.toCanvas('.bwipjs', {
             bcid: this.state.docType === DocType.EUDCC ? 'qrcode' : 'datamatrix',
             scale: 3,
-            text: this.props.data
+            text: this.props.data.trim()
           }).toDataURL()}/>}
           <p
             className="name">{this.state.eudcc?.payload.hcert.nam?.gn || this.state.ddoc?.first_name} {this.state.eudcc?.payload.hcert.nam?.fn || this.state.ddoc?.last_name}</p>

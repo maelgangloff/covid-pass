@@ -7,6 +7,7 @@ table {
 
   td {
     border: 1px solid;
+    width: 300px;
     @media print {
       width: 8.5cm;
       height: 5.5cm;
