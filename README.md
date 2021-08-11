@@ -9,8 +9,8 @@ Toutes les étapes sont effectuées sur votre terminal. Aucun échange de donné
 1. Scanner son pass sanitaire depuis le site
 1. Imprimer la page
 1. Découper le contour du cadre rectangulaire
-1. Plier pour former une carte 
-1. Plastifier pour rendre la carte solide
+1. Plier pour former une carte
+1. Plastifier la carte pour la rendre solide
 
 Compatible avec:
 * Certificat COVID Numérique UE (EUDCC)
