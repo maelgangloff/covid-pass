@@ -123,10 +123,6 @@ function EUCCInfoTable (passType: PassType, eudcc?: VaccinationEntry | TestEntry
           <td>{eudcc?.fr as string}</td>
         </tr>
         <tr>
-          <td>Certificate issuer</td>
-          <td>{eudcc?.is as string}</td>
-        </tr>
-        <tr>
           <td>Certificate valid from</td>
           <td>{eudcc?.df as string}</td>
         </tr>
