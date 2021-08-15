@@ -1,16 +1,20 @@
 table {
   text-align: center;
-  border-collapse: collapse;
   display: flex;
   justify-content: center;
   break-inside: avoid;
 
   td {
     border: 1px solid;
-    width: 300px;
-    @media print {
-      width: 8.5cm;
-      height: 5.5cm;
+    width: 8.5cm;
+    height: 5.5cm;
+
+    span.ad {
+      position: absolute;
+      font-size: small;
+      transform: rotate(-90deg) translateY(-5.6cm) translateX(3cm);
+      color: gray;
+      font-style: italic;
     }
 
     h4 {
@@ -26,7 +30,7 @@ table {
       font-weight: bold;
     }
 
-    svg, img {
+    img {
       margin: auto;
       display: block;
       height: 150px;
@@ -48,7 +52,7 @@ table {
     }
   }
 
-  .infos {
+  table.infos {
     font-size: xx-small;
 
     td {
@@ -79,7 +83,7 @@ table {
   font-size: 7px;
 }
 
-.bwipjs {
+canvas.bwipjs {
   height: 0;
   width: 0;
   margin: 0;

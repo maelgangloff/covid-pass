@@ -21,6 +21,7 @@ export enum DocType {
 
 interface Props {
   data: string
+  isWithAd?: boolean
 }
 
 interface State {
@@ -242,9 +243,7 @@ export class CovidCard extends React.Component<Props, State> {
 
   render () {
     if (typeof this.state.eudcc === 'undefined' && typeof this.state.ddoc === 'undefined') {
-      return <>
-      <canvas className="bwipjs"/>
-    </>
+      return <canvas className="bwipjs"/>
     }
     const passType = this.state.docType === DocType.DDOC ? this.state.ddoc?.type.toUpperCase() as PassType : this.state.eudcc?.payload.hcert ? 'v' in this.state.eudcc?.payload.hcert ? 'VACCINATION' : 't' in this.state.eudcc?.payload.hcert ? 'TEST' : 'RECOVERY' : 'VACCINATION'
     const eudccEntry = passType === 'VACCINATION' ? this.state.eudcc?.payload.hcert.v : passType === 'TEST' ? this.state.eudcc?.payload.hcert.t : this.state.eudcc?.payload.hcert.r
@@ -263,6 +262,7 @@ export class CovidCard extends React.Component<Props, State> {
             className="name">{this.state.eudcc?.payload.hcert.nam?.gn || this.state.ddoc?.first_name} {this.state.eudcc?.payload.hcert.nam?.fn || this.state.ddoc?.last_name}</p>
           <p>Date of
             birth {this.state.eudcc?.payload.hcert.dob || formatISODate(this.state.ddoc?.date_of_birth as Date)}</p>
+          {this.props.isWithAd && <span className="ad">covid-pass.pages.dev</span>}
         </td>
         <td>
           <h2>{passType}</h2>
