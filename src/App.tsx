@@ -5,8 +5,8 @@ import QrReader from 'react-qr-reader'
 import { EUDCC_PREFIX } from './converters/eudcc'
 import { DDOC_PREFIX } from './converters/2ddoc'
 
-const TAC_WALLET_DCC_URL = `https://bonjour.tousanticovid.gouv.fr/app/walletdcc#${EUDCC_PREFIX}`
-const TAC_WALLET_DDOC_URL = `https://bonjour.tousanticovid.gouv.fr/app/wallet?v=${DDOC_PREFIX}`
+const TAC_WALLET_DCC_URL = 'https://bonjour.tousanticovid.gouv.fr/app/walletdcc#'
+const TAC_WALLET_DDOC_URL = 'https://bonjour.tousanticovid.gouv.fr/app/wallet?v='
 
 interface State {
   hcert: string
@@ -55,8 +55,8 @@ class App extends React.Component<object, State> {
     if (qr === null) return
     this.setState({ isScanning: false })
     if (qr.startsWith(EUDCC_PREFIX) || qr.startsWith(DDOC_PREFIX)) return this.appendHCERT(qr)
-    if (qr.startsWith(TAC_WALLET_DCC_URL)) return this.appendHCERT(decodeURI(qr.replace(TAC_WALLET_DCC_URL.substr(0, TAC_WALLET_DCC_URL.length - EUDCC_PREFIX.length), '')))
-    if (qr.startsWith(TAC_WALLET_DDOC_URL)) return this.appendHCERT(decodeURI(qr.replace(TAC_WALLET_DDOC_URL.substr(0, TAC_WALLET_DDOC_URL.length - DDOC_PREFIX.length), '')))
+    if (qr.startsWith(TAC_WALLET_DCC_URL)) return this.appendHCERT(decodeURIComponent(qr.replace(TAC_WALLET_DCC_URL, '')))
+    if (qr.startsWith(TAC_WALLET_DDOC_URL)) return this.appendHCERT(decodeURIComponent(qr.replace(TAC_WALLET_DDOC_URL, '')))
   }
 
   /**
@@ -117,7 +117,7 @@ class App extends React.Component<object, State> {
           about it is sent anywhere.</span></p>
         <div className="input-group">
           <button className='btn btn-outline-dark' onClick={() => this.setState({ isScanning: true })}>📷</button>
-          <textarea className='form-control' value={this.state.hcert}
+          <textarea autoFocus={true} className='form-control' value={this.state.hcert}
                     onChange={({ target }) => this.setState({ hcert: target.value })}
                     placeholder={`${EUDCC_PREFIX} | ${DDOC_PREFIX}`}/>
           <div className="btn-group">
