@@ -5,9 +5,10 @@ table {
   break-inside: avoid;
 
   td {
-    border: 1px solid;
-    width: 8.5cm;
-    height: 5.5cm;
+    border: 1px dashed;
+    background-color: #ffffff;
+    width: 85mm;
+    height: 55mm;
 
     span.ad {
       position: absolute;
@@ -47,8 +48,16 @@ table {
       padding: 0;
     }
 
-    p.name {
-      font-weight: bold;
+    p {
+      &.name {
+        font-weight: bold;
+      }
+
+      &.dob {
+        line-height: 2mm;
+        font-size: 3mm;
+        margin-bottom: 2mm;
+      }
     }
   }
 
@@ -64,6 +73,7 @@ table {
     tr {
       :first-child {
         text-align: left;
+        font-size: 8px;
       }
 
       :last-child {

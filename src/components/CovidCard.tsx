@@ -260,7 +260,7 @@ export class CovidCard extends React.Component<Props, State> {
           }).toDataURL()}/>}
           <p
             className="name">{this.state.eudcc?.payload.hcert.nam?.gn || this.state.ddoc?.first_name} {this.state.eudcc?.payload.hcert.nam?.fn || this.state.ddoc?.last_name}</p>
-          <p>Date of
+          <p className="dob">Date of
             birth {this.state.eudcc?.payload.hcert.dob || formatISODate(this.state.ddoc?.date_of_birth as Date)}</p>
           {this.props.isWithAd && <span className="ad">covid-pass.pages.dev</span>}
         </td>
